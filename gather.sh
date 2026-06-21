@@ -21,7 +21,11 @@ DATE_FROM="$(date -d "$DATE -7 days" +%Y-%m-%d 2>/dev/null \
   || date -j -v-7d -f "%Y-%m-%d" "$DATE" "+%Y-%m-%d")"
 
 [ -f runbook.md ] || { echo "missing runbook.md" >&2; exit 2; }
-[ -f genres.conf ] || { echo "missing genres.conf" >&2; exit 2; }
+if [ ! -f genres.conf ]; then
+  echo "missing genres.conf" >&2
+  echo "  run: cp genres.conf.example genres.conf  (then edit it with your categories)" >&2
+  exit 2
+fi
 RUNBOOK="$(cat runbook.md)"
 
 SHARDDIR="weekly/shards/${DATE}"

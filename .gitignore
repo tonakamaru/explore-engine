@@ -1,8 +1,17 @@
+# ローカル運用データ（個人の追跡対象が出るので公開しない）
+genres.conf
+examples/
+
+# ジャンル別フロンティア地図と週次デルタの実体（ローカル）
 genres/*
 !genres/.gitkeep
 weekly/*
 !weekly/.gitkeep
+
+# 生成物
 index.html
+
+# その他
 .DS_Store
 *.tmp
 *.log

@@ -20,15 +20,19 @@
 git clone https://github.com/tonakamaru/explore-engine
 cd explore-engine
 
-# 1) 9ジャンル並列リサーチ → 週次ファイル生成 → HTML/index 再生成 まで一括
+# 1) ジャンル定義をコピーして自分用に編集
+cp genres.conf.example genres.conf
+$EDITOR genres.conf
+
+# 2) 並列リサーチ → 週次ファイル生成 → HTML/index 再生成 まで一括
 ./gather.sh
 
-# 2) ブラウザで見る
+# 3) ブラウザで見る
 open index.html        # macOS
 xdg-open index.html    # Linux
 
-# 3) （任意）静的配信先にもコピー
-DELIVERY_DIR=/mnt/c/path/to/static ./build.sh
+# 4) （任意）静的配信先にもコピー
+DELIVERY_DIR=/path/to/static ./build.sh
 ```
 
 ## エージェントを差し替える
@@ -50,18 +54,18 @@ DATE=2026-06-20 ./gather.sh                       # 「今日」を上書き
 ```
 explore-engine/
 ├── README.md
-├── runbook.md         ← 単一ジャンルのリサーチ指示書（{{GENRE}} 置換あり）
-├── genres.conf        ← ジャンル定義（slug|label 一行ずつ・自分で編集）
-├── gather.sh          ← 並列オーケストレータ（ジャンル別 shard → merge → build）
-├── build.sh           ← 決定的ビルド（.md → .html + index.html）
-├── templates/         ← 雛形（天井移動エントリ / 週次デルタ）
-├── examples/          ← サンプル出力（こういうのが出ます）
-├── genres/            ← ローカルのジャンル別地図（.gitignore対象）
-├── weekly/            ← ローカルの週次デルタ＋shards/（.gitignore対象）
-└── index.html         ← ローカルの入口（.gitignore対象）
+├── runbook.md            ← 単一ジャンルのリサーチ指示書（{{GENRE}} 置換あり）
+├── genres.conf.example   ← ジャンル定義のテンプレ（cp してから編集）
+├── gather.sh             ← 並列オーケストレータ（ジャンル別 shard → merge → build）
+├── build.sh              ← 決定的ビルド（.md → .html + index.html）
+├── templates/            ← 雛形（天井移動エントリ / 週次デルタ）
+├── genres.conf           ← 自分のジャンル定義（.gitignore対象）
+├── genres/               ← ローカルのジャンル別地図（.gitignore対象）
+├── weekly/               ← ローカルの週次デルタ＋shards/（.gitignore対象）
+└── index.html            ← ローカルの入口（.gitignore対象）
 ```
 
-`genres/` `weekly/` `index.html` は各自のローカル運用データなのでバージョン管理しない。
+`genres.conf` `genres/` `weekly/` `index.html` は各自のローカル運用データなのでバージョン管理しない。
 
 ## 出力フォーマット（天井移動エントリ）
 
@@ -78,7 +82,7 @@ explore-engine/
 
 ## カスタマイズ
 
-- **ジャンルの増減**: `genres.conf` を編集（slug は filename 用英小文字、label は runbook に渡る表示名）
+- **ジャンルの増減**: `genres.conf`（`genres.conf.example` からコピーした自分用ファイル）を編集（slug は filename 用英小文字、label は runbook に渡る表示名）
 - **リサーチの規約**: `runbook.md` の「規約」「やってはいけないこと」「few-shot サンプル」を編集
 - **並列数**: `PARALLEL=N ./gather.sh`
 - **配信先**: `DELIVERY_DIR=...`

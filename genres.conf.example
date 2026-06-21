@@ -1,0 +1,13 @@
+# slug|label
+# slug:  filename用の英小文字スラッグ（ASCII・ハイフン可）
+# label: runbook に渡される表示名（日本語OK・スペースOK）
+#
+# 使い方:
+#   cp genres.conf.example genres.conf
+#   # 自分の追跡したいジャンルに書き換えて ./gather.sh を実行
+#
+# 行頭 # と空行はコメント／無視される。
+
+genre-1|あなたが追跡したいジャンル 1
+genre-2|あなたが追跡したいジャンル 2
+genre-3|あなたが追跡したいジャンル 3
