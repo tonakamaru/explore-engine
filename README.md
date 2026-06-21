@@ -7,11 +7,14 @@
 ## 思想
 
 - **「手順」と「知能」を分離する**
-  - 手順 = `build.sh` / `gather.sh`（決定的・LLM不要・冪等）
-  - 知能 = `runbook.md`（任意の AI CLI に食わせる単一ジャンル指示書）
+  - 手順 = `build.sh` / `gather.sh` / `mapgen.sh`（決定的・LLM不要・冪等）
+  - 知能 = `runbook.md` / `runbook_map.md`（任意の AI CLI に食わせる指示書）
 - **時間に対する天井移動**を `before → after` で記述する
   - 製品AとBのピア比較や「君はXすべき」という決め打ちはしない
-- **ジャンル定義は `genres.conf`、リサーチ手順は `runbook.md`、並列化はシェル**
+- **2種類の出力**を分けて扱う:
+  - **フロンティア地図** (mapgen.sh + runbook_map.md): 各ジャンルの「現在の天井」スナップショット。長期スキャン（既定12ヶ月）。初回 or 大きい変化があった時に再生成
+  - **週次デルタ** (gather.sh + runbook.md): 直近7日間の天井移動。毎週回す増分
+- **ジャンル定義は `genres.conf`、並列化はシェル**
   - エージェント側のサブエージェント機能には依存しない → モデル/CLI 非依存
 
 ## クイックスタート
@@ -24,20 +27,25 @@ cd explore-engine
 cp genres.conf.example genres.conf
 $EDITOR genres.conf
 
-# 2) 並列リサーチ → 週次ファイル生成 → HTML/index 再生成 まで一括
+# 2) 初回: 各ジャンルの「現在のフロンティア地図」を生成（既定で過去12ヶ月をスキャン）
+./mapgen.sh
+# 任意で開始日を指定（例: 2024年4月以降の全期間をスキャン）
+SCAN_FROM=2024-04-01 ./mapgen.sh
+
+# 3) 以降は週次デルタ（直近7日間に動いたものだけ）
 ./gather.sh
 
-# 3) ブラウザで見る
+# 4) ブラウザで見る
 open index.html        # macOS
 xdg-open index.html    # Linux
 
-# 4) （任意）静的配信先にもコピー
+# 5) （任意）静的配信先にもコピー
 DELIVERY_DIR=/path/to/static ./build.sh
 ```
 
 ## エージェントを差し替える
 
-`gather.sh` は `AGENT_CMD` 環境変数で任意の AI CLI に差し替え可能:
+`gather.sh` と `mapgen.sh` はどちらも `AGENT_CMD` 環境変数で任意の AI CLI に差し替え可能:
 
 ```bash
 ./gather.sh                                       # 既定: claude -p
@@ -45,6 +53,9 @@ AGENT_CMD="codex exec --full-auto" ./gather.sh    # OpenAI Codex CLI
 AGENT_CMD="gemini -p" ./gather.sh                 # Google Gemini CLI
 PARALLEL=3 ./gather.sh                            # 並列数を絞る
 DATE=2026-06-20 ./gather.sh                       # 「今日」を上書き
+
+./mapgen.sh ai-coding                             # 1ジャンルだけ再マップ
+SCAN_FROM=2024-04-01 SCAN_TO=2026-06-21 ./mapgen.sh
 ```
 
 並列化は**エージェント側ではなくシェル側**で行う設計のため、サブエージェント機能を持たない CLI でも同等に動く。
@@ -54,9 +65,11 @@ DATE=2026-06-20 ./gather.sh                       # 「今日」を上書き
 ```
 explore-engine/
 ├── README.md
-├── runbook.md            ← 単一ジャンルのリサーチ指示書（{{GENRE}} 置換あり）
+├── runbook.md            ← 週次デルタ用の指示書（7日スコープ）
+├── runbook_map.md        ← フロンティア地図用の指示書（長期スキャン）
 ├── genres.conf.example   ← ジャンル定義のテンプレ（cp してから編集）
-├── gather.sh             ← 並列オーケストレータ（ジャンル別 shard → merge → build）
+├── gather.sh             ← 週次デルタの並列オーケストレータ
+├── mapgen.sh             ← フロンティア地図の並列オーケストレータ
 ├── build.sh              ← 決定的ビルド（.md → .html + index.html）
 ├── templates/            ← 雛形（天井移動エントリ / 週次デルタ）
 ├── genres.conf           ← 自分のジャンル定義（.gitignore対象）
