@@ -1,0 +1,8 @@
+genres/*
+!genres/.gitkeep
+weekly/*
+!weekly/.gitkeep
+index.html
+.DS_Store
+*.tmp
+*.log
