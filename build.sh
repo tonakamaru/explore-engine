@@ -74,7 +74,7 @@ EOF
       printf '<a class="card" href="%s"><div class="title">%s</div></a>\n' "${md%.md}.html" "$t"
     done
   else
-    echo '<p class="empty">まだありません。runbook.md を Claude に食わせて生成してください。</p>'
+    echo '<p class="empty">まだありません。</p>'
   fi
   echo '<h2>週次デルタ</h2>'
   weekly=(weekly/*.md)
